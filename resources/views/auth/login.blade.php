@@ -11,15 +11,21 @@
         <h1 class="text-3xl font-black">Owner Login</h1>
         <p class="mt-2 text-sm text-slate-500">Akses ini dipakai untuk masuk ke panel pengelolaan sistem.</p>
 
+        @if ($errors->any())
+            <div class="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {{ $errors->first() }}
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login.store') }}" class="mt-8 space-y-5">
             @csrf
             <div>
                 <label class="mb-2 block text-sm font-semibold">Email</label>
-                <input name="email" type="email" value="{{ old('email') }}" class="w-full rounded-2xl border border-slate-200 px-4 py-3" required>
+                <input name="email" type="email" value="{{ old('email') }}" class="w-full rounded-2xl border px-4 py-3 {{ $errors->has('email') ? 'border-rose-400' : 'border-slate-200' }}" required>
             </div>
             <div>
                 <label class="mb-2 block text-sm font-semibold">Password</label>
-                <input name="password" type="password" class="w-full rounded-2xl border border-slate-200 px-4 py-3" required>
+                <input name="password" type="password" class="w-full rounded-2xl border px-4 py-3 {{ $errors->has('email') ? 'border-rose-400' : 'border-slate-200' }}" required>
             </div>
             <label class="flex items-center gap-2 text-sm text-slate-600">
                 <input type="checkbox" name="remember" value="1">

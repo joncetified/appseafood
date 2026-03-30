@@ -15,28 +15,48 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
 
-        $superAdminRole = Role::where('name', 'super_admin')->first();
-        $managerRole = Role::where('name', 'manager')->first();
-        $adminRole = Role::where('name', 'admin')->first();
-        $kasirRole = Role::where('name', 'kasir')->first();
+        $defaultUsers = [
+            [
+                'role' => 'super_admin',
+                'name' => env('SUPER_ADMIN_NAME', 'Super Admin'),
+                'email' => env('SUPER_ADMIN_EMAIL', 'superadmin@seafood.local'),
+                'password' => env('SUPER_ADMIN_PASSWORD', 'ChangeMe123!'),
+            ],
+            [
+                'role' => 'manager',
+                'name' => env('MANAGER_NAME', 'Manager'),
+                'email' => env('MANAGER_EMAIL', 'manager@seafood.local'),
+                'password' => env('MANAGER_PASSWORD', 'ChangeMe123!'),
+            ],
+            [
+                'role' => 'admin',
+                'name' => env('ADMIN_NAME', 'Admin'),
+                'email' => env('ADMIN_EMAIL', 'admin@seafood.local'),
+                'password' => env('ADMIN_PASSWORD', 'ChangeMe123!'),
+            ],
+            [
+                'role' => 'kasir',
+                'name' => env('KASIR_NAME', 'Kasir'),
+                'email' => env('KASIR_EMAIL', 'kasir@seafood.local'),
+                'password' => env('KASIR_PASSWORD', 'ChangeMe123!'),
+            ],
+        ];
 
-        if ($superAdminRole) {
+        foreach ($defaultUsers as $defaultUser) {
+            $role = Role::where('name', $defaultUser['role'])->first();
+
+            if (! $role) {
+                continue;
+            }
+
             User::updateOrCreate(
-                ['email' => env('SUPER_ADMIN_EMAIL', 'superadmin@seafood.local')],
+                ['email' => $defaultUser['email']],
                 [
-                    'role_id' => $superAdminRole->id,
-                    'name' => env('SUPER_ADMIN_NAME', 'Super Admin'),
-                    'password' => env('SUPER_ADMIN_PASSWORD', 'ChangeMe123!'),
+                    'role_id' => $role->id,
+                    'name' => $defaultUser['name'],
+                    'password' => $defaultUser['password'],
                 ]
             );
         }
-
-// Hanya super admin yang dibuat
-        // if ($managerRole) {
-        //     User::updateOrCreate(
-        //         ['email' => env('MANAGER_EMAIL', 'manager@seafood.local')],
-        //         ...
-        //     );
-        // } dst...
     }
 }

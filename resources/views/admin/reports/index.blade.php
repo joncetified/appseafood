@@ -30,6 +30,7 @@
         <div class="flex flex-wrap gap-3">
             <a href="{{ route('admin.reports.export.excel', request()->query()) }}" class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">Export Excel</a>
             <a href="{{ route('admin.reports.export.pdf', request()->query()) }}" target="_blank" class="rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm font-semibold text-cyan-700">Export PDF</a>
+            <a href="{{ route('admin.reports.print', request()->query()) }}" target="_blank" class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">Print</a>
         </div>
     </div>
 
@@ -83,6 +84,51 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <div class="mt-8 rounded-3xl bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+            <h2 class="text-lg font-bold">Detail Transaksi</h2>
+            <p class="text-sm text-slate-500">{{ $detailedOrders->count() }} pesanan</p>
+        </div>
+
+        <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="text-left text-slate-500">
+                    <tr>
+                        <th class="px-4 py-3">No. Pesanan</th>
+                        <th class="px-4 py-3">Tanggal</th>
+                        <th class="px-4 py-3">Pelanggan</th>
+                        <th class="px-4 py-3">Item</th>
+                        <th class="px-4 py-3">Qty</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">Pembayaran</th>
+                        <th class="px-4 py-3 text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($detailedOrders as $order)
+                        <tr class="border-t border-slate-100 align-top">
+                            <td class="px-4 py-3 font-semibold text-slate-700">{{ $order['order_number'] }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">{{ $order['date'] }}</td>
+                            <td class="px-4 py-3">
+                                <div class="font-medium text-slate-700">{{ $order['customer_name'] }}</div>
+                                <div class="text-xs text-slate-400">{{ $order['customer_phone'] }}</div>
+                            </td>
+                            <td class="px-4 py-3 text-slate-600">{{ $order['items_summary'] ?: '-' }}</td>
+                            <td class="px-4 py-3">{{ $order['total_quantity'] }}</td>
+                            <td class="px-4 py-3">{{ $order['status'] }}</td>
+                            <td class="px-4 py-3">{{ $order['payment_status'] }}</td>
+                            <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($order['total_amount'], 0, ',', '.') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="px-4 py-6 text-center text-slate-400">Belum ada data transaksi untuk periode ini.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 @endsection

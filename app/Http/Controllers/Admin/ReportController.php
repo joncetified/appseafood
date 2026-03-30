@@ -6,12 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\SeafoodItem;
 use App\Models\User;
+use Illuminate\Http\Response;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
@@ -20,55 +19,38 @@ class ReportController extends Controller
         return view('admin.reports.index', $this->buildReportData($request));
     }
 
-    public function exportExcel(Request $request): StreamedResponse
+    public function exportExcel(Request $request): Response
     {
         $data = $this->buildReportData($request);
-        $fileName = 'laporan-seafood-'.now()->format('Ymd-His').'.csv';
+        $fileName = 'laporan-seafood-'.now()->format('Ymd-His').'.xls';
 
-        return response()->streamDownload(function () use ($data): void {
-            $handle = fopen('php://output', 'w');
-
-            fputcsv($handle, ['Laporan Seafood']);
-            fputcsv($handle, ['Periode', $data['filterLabel']]);
-            fputcsv($handle, []);
-            fputcsv($handle, ['Ringkasan']);
-            fputcsv($handle, ['Total Penjualan', $data['summary']['total_sales']]);
-            fputcsv($handle, ['Penjualan Lunas', $data['summary']['paid_sales']]);
-            fputcsv($handle, ['Total Pesanan', $data['summary']['total_orders']]);
-            fputcsv($handle, ['Total Menu', $data['summary']['total_menu']]);
-            fputcsv($handle, ['Total Pelanggan', $data['summary']['total_customers']]);
-            fputcsv($handle, []);
-            fputcsv($handle, ['Status Pesanan']);
-            fputcsv($handle, ['Status', 'Jumlah']);
-
-            foreach ($data['orderStatusSummary'] as $row) {
-                fputcsv($handle, [$row->status, $row->total]);
-            }
-
-            fputcsv($handle, []);
-            fputcsv($handle, ['Menu Terlaris']);
-            fputcsv($handle, ['Menu', 'Qty', 'Penjualan']);
-
-            foreach ($data['topItems'] as $item) {
-                fputcsv($handle, [$item->item_name, $item->total_quantity, $item->total_sales]);
-            }
-
-            fclose($handle);
-        }, $fileName, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return response()
+            ->view('admin.reports.excel', $data)
+            ->header('Content-Type', 'application/vnd.ms-excel; charset=UTF-8')
+            ->header('Content-Disposition', 'attachment; filename="'.$fileName.'"');
     }
 
     public function exportPdf(Request $request): View
     {
-        return view('admin.reports.pdf', $this->buildReportData($request));
+        return view('admin.reports.pdf', [
+            ...$this->buildReportData($request),
+            'autoPrint' => false,
+        ]);
+    }
+
+    public function print(Request $request): View
+    {
+        return view('admin.reports.pdf', [
+            ...$this->buildReportData($request),
+            'autoPrint' => true,
+        ]);
     }
 
     private function buildReportData(Request $request): array
     {
         [$startDate, $endDate, $filterLabel] = $this->resolveDateRange($request);
 
-        $ordersQuery = Order::query();
+        $ordersQuery = Order::query()->with('items');
 
         if ($startDate && $endDate) {
             $ordersQuery->whereBetween('created_at', [
@@ -78,13 +60,18 @@ class ReportController extends Controller
         }
 
         $orderIds = (clone $ordersQuery)->pluck('id');
-        $orders = (clone $ordersQuery)->get();
+        $orders = (clone $ordersQuery)->orderByDesc('created_at')->get();
 
         $orderStatusSummary = (clone $ordersQuery)
             ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->orderBy('status')
-            ->get();
+            ->get()
+            ->map(function ($row) {
+                $row->label = $this->formatLabel($row->status);
+
+                return $row;
+            });
 
         $topItems = DB::table('order_items')
             ->when($orderIds->isNotEmpty(), fn ($query) => $query->whereIn('order_id', $orderIds))
@@ -94,6 +81,22 @@ class ReportController extends Controller
             ->orderByDesc('total_quantity')
             ->limit(10)
             ->get();
+
+        $detailedOrders = $orders->map(function (Order $order) {
+            return [
+                'order_number' => $order->order_number,
+                'date' => $order->created_at?->format('d/m/Y H:i'),
+                'customer_name' => $order->customer_name,
+                'customer_phone' => $order->customer_phone ?: '-',
+                'status' => $this->formatLabel($order->status),
+                'payment_status' => $this->formatLabel($order->payment_status),
+                'total_quantity' => $order->items->sum('quantity'),
+                'total_amount' => (float) $order->total_amount,
+                'items_summary' => $order->items
+                    ->map(fn ($item) => $item->item_name.' x'.$item->quantity)
+                    ->implode(', '),
+            ];
+        });
 
         return [
             'filters' => [
@@ -111,6 +114,7 @@ class ReportController extends Controller
             ],
             'orderStatusSummary' => $orderStatusSummary,
             'topItems' => $topItems,
+            'detailedOrders' => $detailedOrders,
         ];
     }
 
@@ -140,5 +144,10 @@ class ReportController extends Controller
         }
 
         return [null, null, 'Semua Periode'];
+    }
+
+    private function formatLabel(string $value): string
+    {
+        return str($value)->replace('_', ' ')->title()->toString();
     }
 }
