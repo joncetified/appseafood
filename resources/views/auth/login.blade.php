@@ -11,6 +11,12 @@
         <h1 class="text-3xl font-black">Owner Login</h1>
         <p class="mt-2 text-sm text-slate-500">Akses ini dipakai untuk masuk ke panel pengelolaan sistem.</p>
 
+        @if(session('status'))
+            <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                {{ session('status') }}
+            </div>
+        @endif
+
         @if ($errors->any())
             <div class="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                 {{ $errors->first() }}
@@ -31,14 +37,21 @@
                 <input type="checkbox" name="remember" value="1">
                 Ingat saya
             </label>
+
+            @include('auth.partials.captcha')
+
             <button type="submit" class="w-full rounded-2xl bg-slate-900 px-4 py-3 font-semibold text-white">Login</button>
         </form>
+
+        <p class="mt-4 text-sm text-slate-500">
+            Lupa password?
+            <a href="{{ route('password.request') }}" class="font-semibold text-cyan-700">Reset via email / WhatsApp</a>
+        </p>
 
         <p class="mt-6 text-sm text-slate-500">
             Belum punya akun pelanggan?
             <a href="{{ route('register') }}" class="font-semibold text-cyan-700">Daftar</a>
         </p>
-
     </div>
 </body>
 </html>

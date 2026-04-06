@@ -50,6 +50,12 @@
                 <label class="mb-2 block text-sm font-semibold">Catatan</label>
                 <textarea name="notes" rows="4" class="w-full rounded-2xl border border-slate-200 px-4 py-3">{{ old('notes', $order->notes) }}</textarea>
             </div>
+            @if(auth()->user()?->isSuperAdmin())
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                    <p><span class="font-semibold">Created By:</span> {{ $order->creator?->name ?? '-' }}</p>
+                    <p class="mt-1"><span class="font-semibold">Updated By:</span> {{ $order->updater?->name ?? '-' }}</p>
+                </div>
+            @endif
             <button type="submit" class="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white">Update Pesanan</button>
         </form>
     </div>

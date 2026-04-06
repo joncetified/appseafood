@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Seafood</title>
+    <title>{{ $appData['profile']->business_name ?? 'Seafood' }}</title>
     <meta name="theme-color" content="#0f172a">
-    <meta name="application-name" content="Seafood">
+    <meta name="application-name" content="{{ $appData['profile']->business_name ?? 'Seafood' }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Seafood">
+    <meta name="apple-mobile-web-app-title" content="{{ $appData['profile']->business_name ?? 'Seafood' }}">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">

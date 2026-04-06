@@ -27,8 +27,9 @@
             <input name="price" type="number" step="0.01" min="0" value="{{ old('price', $item->price) }}" class="w-full rounded-2xl border border-slate-200 px-4 py-3" required>
         </div>
         <div>
-            <label class="mb-2 block text-sm font-semibold">Path Gambar</label>
+            <label class="mb-2 block text-sm font-semibold">URL / Path Gambar</label>
             <input name="image_path" type="text" value="{{ old('image_path', $item->image_path) }}" class="w-full rounded-2xl border border-slate-200 px-4 py-3">
+            <p class="mt-2 text-xs text-slate-500">Bisa isi link gambar langsung dari `Copy image address` atau path file di storage.</p>
         </div>
         <div>
             <label class="mb-2 block text-sm font-semibold">Level Pedas</label>

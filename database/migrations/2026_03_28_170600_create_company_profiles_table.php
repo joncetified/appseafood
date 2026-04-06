@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('company_profiles', function (Blueprint $table) {
             $table->id();
-            $table->string('business_name')->default('Seafood App');
+            $table->string('business_name')->default('Seafood');
             $table->string('tagline')->nullable();
             $table->text('about')->nullable();
             $table->string('phone')->nullable();

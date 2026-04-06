@@ -4,9 +4,7 @@ import { companyProfile } from "../data/menuData";
 export default function Navbar({ cartItems, onCartClick }) {
     const [scrolled, setScrolled] = useState(false);
     const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-    const businessName = companyProfile?.business_name && companyProfile.business_name !== "Seafood App"
-        ? companyProfile.business_name
-        : "Seafood";
+    const businessName = "Seafood";
     const tagline = companyProfile?.tagline || "Online Ordering";
 
     useEffect(() => {

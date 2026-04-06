@@ -14,7 +14,10 @@ class CategoryController extends Controller
     public function index(): View
     {
         return view('admin.categories.index', [
-            'categories' => Category::latest()->paginate(10),
+            'categories' => Category::query()
+                ->with(['creator', 'updater'])
+                ->latest()
+                ->paginate(10),
         ]);
     }
 

@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\CompanyProfile;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer('*', function ($view): void {
+            $profile = null;
+
+            if (Schema::hasTable('company_profiles')) {
+                $profile = CompanyProfile::query()->first();
+            }
+
+            $view->with('siteProfile', $profile);
+        });
     }
 }

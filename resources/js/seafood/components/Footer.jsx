@@ -1,9 +1,7 @@
 import { companyProfile } from "../data/menuData";
 
 export default function Footer() {
-    const businessName = companyProfile?.business_name && companyProfile.business_name !== "Seafood App"
-        ? companyProfile.business_name
-        : "Seafood";
+    const businessName = "Seafood";
     const about = companyProfile?.about || "Platform pemesanan seafood online untuk memudahkan pelanggan memilih menu, membuat pesanan, dan menikmati hidangan favorit dengan lebih praktis.";
     const footerSections = [
         {

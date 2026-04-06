@@ -1,9 +1,7 @@
 import { companyProfile } from "../data/menuData";
 
 export default function Hero() {
-    const businessName = companyProfile?.business_name && companyProfile.business_name !== "Seafood App"
-        ? companyProfile.business_name
-        : "Seafood";
+    const businessName = "Seafood";
     const tagline = companyProfile?.tagline || "Pesan seafood favoritmu dengan cepat, praktis, dan langsung dari satu aplikasi.";
 
     return (

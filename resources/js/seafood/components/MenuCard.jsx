@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 function formatPrice(price) {
     return new Intl.NumberFormat("id-ID", {
         style: "currency",
@@ -7,12 +9,25 @@ function formatPrice(price) {
 }
 
 export default function MenuCard({ item, onAddToCart }) {
+    const [imageError, setImageError] = useState(false);
+    const hasImage = Boolean(item.image_url) && !imageError;
+
     return (
         <div className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-900/10">
             <div className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 md:h-52">
-                <span className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
-                    gambar menu
-                </span>
+                {hasImage ? (
+                    <img
+                        src={item.image_url}
+                        alt={item.name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        onError={() => setImageError(true)}
+                    />
+                ) : (
+                    <span className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
+                        gambar menu
+                    </span>
+                )}
 
                 {item.badge && (
                     <div className="absolute left-3 top-3">
@@ -32,7 +47,7 @@ export default function MenuCard({ item, onAddToCart }) {
 
                 {item.rating && (
                     <div className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 shadow-sm backdrop-blur-sm">
-                        <span className="text-xs text-yellow-500">★</span>
+                        <span className="text-xs text-yellow-500">*</span>
                         <span className="text-xs font-bold text-gray-700">{item.rating}</span>
                     </div>
                 )}

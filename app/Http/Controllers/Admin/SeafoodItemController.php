@@ -15,7 +15,10 @@ class SeafoodItemController extends Controller
     public function index(): View
     {
         return view('admin.seafood-items.index', [
-            'items' => SeafoodItem::with('category')->latest()->paginate(10),
+            'items' => SeafoodItem::query()
+                ->with(['category', 'creator', 'updater'])
+                ->latest()
+                ->paginate(10),
         ]);
     }
 
@@ -34,7 +37,7 @@ class SeafoodItemController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
-            'image_path' => ['nullable', 'string', 'max:255'],
+            'image_path' => ['nullable', 'string', 'max:2048'],
             'spicy_level' => ['nullable', 'integer', 'min:0', 'max:5'],
             'is_available' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],
@@ -66,7 +69,7 @@ class SeafoodItemController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
-            'image_path' => ['nullable', 'string', 'max:255'],
+            'image_path' => ['nullable', 'string', 'max:2048'],
             'spicy_level' => ['nullable', 'integer', 'min:0', 'max:5'],
             'is_available' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],

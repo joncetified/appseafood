@@ -1,9 +1,33 @@
+import { useState } from "react";
+
 function formatPrice(price) {
     return new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
         minimumFractionDigits: 0,
     }).format(price);
+}
+
+function CartImage({ item }) {
+    const [imageError, setImageError] = useState(false);
+
+    if (!item.image_url || imageError) {
+        return (
+            <div className="mt-1 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 md:h-14 md:w-14">
+                Img
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={item.image_url}
+            alt={item.name}
+            className="mt-1 h-12 w-12 rounded-2xl object-cover md:h-14 md:w-14"
+            loading="lazy"
+            onError={() => setImageError(true)}
+        />
+    );
 }
 
 export default function Cart({
@@ -70,9 +94,7 @@ export default function Cart({
                                     key={item.id}
                                     className="group flex items-start gap-3 rounded-xl bg-gray-50 p-3 transition-colors hover:bg-blue-50/50 md:p-4"
                                 >
-                                    <div className="mt-1 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 md:h-14 md:w-14">
-                                        Img
-                                    </div>
+                                    <CartImage item={item} />
                                     <div className="min-w-0 flex-1">
                                         <h4 className="truncate text-sm font-semibold text-gray-900">
                                             {item.name}

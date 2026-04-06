@@ -49,6 +49,9 @@ class ReportController extends Controller
     private function buildReportData(Request $request): array
     {
         [$startDate, $endDate, $filterLabel] = $this->resolveDateRange($request);
+        [$chartStartDate, $chartEndDate, $chartWindowLabel] = $this->resolveChartWindow($request, $startDate, $endDate);
+        $groupBy = $request->string('group_by')->toString() ?: 'monthly';
+        $chartType = $request->string('chart_type')->toString() ?: 'bar';
 
         $ordersQuery = Order::query()->with('items');
 
@@ -98,11 +101,15 @@ class ReportController extends Controller
             ];
         });
 
+        $chartSummary = $this->buildChartSummary($groupBy, $chartStartDate, $chartEndDate);
+
         return [
             'filters' => [
                 'month' => $request->string('month')->toString(),
                 'start_date' => $startDate?->format('Y-m-d'),
                 'end_date' => $endDate?->format('Y-m-d'),
+                'group_by' => $groupBy,
+                'chart_type' => $chartType,
             ],
             'filterLabel' => $filterLabel,
             'summary' => [
@@ -115,6 +122,14 @@ class ReportController extends Controller
             'orderStatusSummary' => $orderStatusSummary,
             'topItems' => $topItems,
             'detailedOrders' => $detailedOrders,
+            'chart' => [
+                'type' => $chartType,
+                'group_by' => $groupBy,
+                'window_label' => $chartWindowLabel,
+                'labels' => $chartSummary->pluck('label')->values(),
+                'sales' => $chartSummary->pluck('total_sales')->map(fn ($value) => (float) $value)->values(),
+                'orders' => $chartSummary->pluck('total_orders')->map(fn ($value) => (int) $value)->values(),
+            ],
         ];
     }
 
@@ -144,6 +159,49 @@ class ReportController extends Controller
         }
 
         return [null, null, 'Semua Periode'];
+    }
+
+    private function resolveChartWindow(Request $request, ?Carbon $startDate, ?Carbon $endDate): array
+    {
+        $groupBy = $request->string('group_by')->toString() ?: 'monthly';
+
+        if ($startDate && $endDate) {
+            return [$startDate, $endDate, 'Mengikuti filter laporan'];
+        }
+
+        return match ($groupBy) {
+            'daily' => [now()->subDays(6), now(), '7 hari terakhir'],
+            'weekly' => [now()->subWeeks(7)->startOfWeek(), now()->endOfWeek(), '8 minggu terakhir'],
+            'yearly' => [now()->subYears(4)->startOfYear(), now()->endOfYear(), '5 tahun terakhir'],
+            default => [now()->subMonths(5)->startOfMonth(), now()->endOfMonth(), '6 bulan terakhir'],
+        };
+    }
+
+    private function buildChartSummary(string $groupBy, Carbon $startDate, Carbon $endDate)
+    {
+        $labelExpression = match ($groupBy) {
+            'daily' => "DATE_FORMAT(created_at, '%d/%m')",
+            'weekly' => "CONCAT(YEAR(created_at), '-W', LPAD(WEEK(created_at, 1), 2, '0'))",
+            'yearly' => "DATE_FORMAT(created_at, '%Y')",
+            default => "DATE_FORMAT(created_at, '%b %Y')",
+        };
+
+        $sortExpression = match ($groupBy) {
+            'daily' => "DATE(created_at)",
+            'weekly' => "STR_TO_DATE(CONCAT(YEAR(created_at), WEEK(created_at, 1), ' Monday'), '%X%V %W')",
+            'yearly' => "DATE_FORMAT(created_at, '%Y-01-01')",
+            default => "DATE_FORMAT(created_at, '%Y-%m-01')",
+        };
+
+        return Order::query()
+            ->whereBetween('created_at', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
+            ->selectRaw("{$labelExpression} as label")
+            ->selectRaw("{$sortExpression} as sort_key")
+            ->selectRaw('COUNT(*) as total_orders')
+            ->selectRaw('SUM(total_amount) as total_sales')
+            ->groupBy('label', 'sort_key')
+            ->orderBy('sort_key')
+            ->get();
     }
 
     private function formatLabel(string $value): string

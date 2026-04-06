@@ -3,17 +3,19 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\TracksUserstamps;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes, TracksUserstamps;
 
     /**
      * The attributes that are mass assignable.
@@ -24,7 +26,13 @@ class User extends Authenticatable
         'role_id',
         'name',
         'email',
+        'whatsapp_number',
+        'is_active',
         'password',
+        'email_verified_at',
+        'created_by',
+        'updated_by',
+        'deleted_by',
     ];
 
     /**
@@ -47,6 +55,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -73,8 +82,35 @@ class User extends Authenticatable
         return in_array($roleName, $roles, true);
     }
 
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
+    }
+
     public function isAdminLevel(): bool
     {
         return $this->hasRole(['super_admin', 'admin']);
+    }
+
+    public function canAccessPage(string $permissionCode): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        if (! $this->role) {
+            return false;
+        }
+
+        if ($this->relationLoaded('role') && $this->role->relationLoaded('pagePermissions')) {
+            return $this->role->pagePermissions->contains('code', $permissionCode);
+        }
+
+        return $this->role->pagePermissions()->where('code', $permissionCode)->exists();
+    }
+
+    public function auditLabel(): string
+    {
+        return $this->name.' <'.$this->email.'>';
     }
 }

@@ -13,7 +13,10 @@ class TestimonialController extends Controller
     public function index(): View
     {
         return view('admin.testimonials.index', [
-            'testimonials' => Testimonial::latest()->paginate(10),
+            'testimonials' => Testimonial::query()
+                ->with(['creator', 'updater'])
+                ->latest()
+                ->paginate(10),
         ]);
     }
 

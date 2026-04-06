@@ -7,32 +7,56 @@
     @vite(['resources/css/app.css'])
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900">
+    @php($currentUser = auth()->user()?->loadMissing('role.pagePermissions'))
     <div class="flex min-h-screen">
         <aside class="hidden w-72 bg-slate-900 p-6 text-slate-100 lg:block">
-            <a href="{{ route('admin.dashboard') }}" class="text-2xl font-black">Seafood Admin</a>
-            <p class="mt-2 text-sm text-slate-400">{{ auth()->user()?->role?->label }}</p>
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 text-2xl font-black">
+                @if($siteProfile?->logo_path)
+                    <img src="{{ asset('storage/'.$siteProfile->logo_path) }}" alt="Logo" class="h-12 w-12 rounded-2xl object-cover">
+                @endif
+                <span>Seafood Admin</span>
+            </a>
+            <p class="mt-2 text-sm text-slate-400">{{ $currentUser?->role?->label }}</p>
 
             <nav class="mt-8 space-y-2 text-sm">
-                <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.dashboard') }}">Dashboard</a>
-
-                @if(auth()->user()?->hasRole(['super_admin', 'admin']))
-                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.categories.index') }}">Kategori</a>
-                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.seafood-items.index') }}">Menu Seafood</a>
-                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.promotions.index') }}">Promo</a>
-                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.testimonials.index') }}">Testimoni</a>
-                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.company-profile.edit') }}">Profil Bisnis</a>
+                @if($currentUser?->canAccessPage('dashboard'))
+                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.dashboard') }}">Dashboard</a>
                 @endif
-
-                @if(auth()->user()?->hasRole(['super_admin']))
+                @if($currentUser?->canAccessPage('categories'))
+                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.categories.index') }}">Kategori</a>
+                @endif
+                @if($currentUser?->canAccessPage('seafood_items'))
+                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.seafood-items.index') }}">Menu Seafood</a>
+                @endif
+                @if($currentUser?->canAccessPage('promotions'))
+                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.promotions.index') }}">Promo</a>
+                @endif
+                @if($currentUser?->canAccessPage('testimonials'))
+                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.testimonials.index') }}">Testimoni</a>
+                @endif
+                @if($currentUser?->canAccessPage('website_settings'))
+                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.company-profile.edit') }}">Website Settings</a>
+                @endif
+                @if($currentUser?->canAccessPage('users'))
                     <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.users.index') }}">User & Role</a>
                 @endif
-
-                @if(auth()->user()?->hasRole(['super_admin', 'admin', 'kasir']))
+                @if($currentUser?->canAccessPage('access_control'))
+                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.access-control.index') }}">Access Control</a>
+                @endif
+                @if($currentUser?->canAccessPage('deleted_records'))
+                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.deleted-records.index') }}">Deleted Records</a>
+                @endif
+                @if($currentUser?->canAccessPage('orders'))
                     <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.orders.index') }}">Pesanan</a>
                 @endif
-
-                @if(auth()->user()?->hasRole(['super_admin', 'admin', 'manager']))
+                @if($currentUser?->canAccessPage('reports'))
                     <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.reports.index') }}">Laporan</a>
+                @endif
+                @if($currentUser?->canAccessPage('imports_exports'))
+                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.import-export.index') }}">Import / Export</a>
+                @endif
+                @if($currentUser?->canAccessPage('maintenance'))
+                    <a class="block rounded-xl px-4 py-3 hover:bg-slate-800" href="{{ route('admin.maintenance.index') }}">Backup & Maintenance</a>
                 @endif
             </nav>
         </aside>

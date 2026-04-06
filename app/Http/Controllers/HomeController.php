@@ -25,8 +25,9 @@ class HomeController extends Controller
             ->map(fn (SeafoodItem $item) => [
                 'id' => $item->id,
                 'name' => $item->name,
-                'description' => $item->description,
+                'description' => $item->description ?? '',
                 'price' => (float) $item->price,
+                'image_url' => $item->image_url,
                 'category' => $item->category?->slug ?? 'uncategorized',
                 'category_name' => $item->category?->name,
                 'badge' => $item->is_featured ? 'Featured' : null,

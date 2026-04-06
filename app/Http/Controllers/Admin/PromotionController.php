@@ -13,7 +13,10 @@ class PromotionController extends Controller
     public function index(): View
     {
         return view('admin.promotions.index', [
-            'promotions' => Promotion::latest()->paginate(10),
+            'promotions' => Promotion::query()
+                ->with(['creator', 'updater'])
+                ->latest()
+                ->paginate(10),
         ]);
     }
 

@@ -13,13 +13,16 @@ class OrderController extends Controller
     public function index(): View
     {
         return view('admin.orders.index', [
-            'orders' => Order::with('items')->latest()->paginate(10),
+            'orders' => Order::query()
+                ->with(['items', 'creator', 'updater'])
+                ->latest()
+                ->paginate(10),
         ]);
     }
 
     public function show(Order $order): View
     {
-        $order->load('items', 'user');
+        $order->load('items', 'user', 'creator', 'updater');
 
         return view('admin.orders.show', compact('order'));
     }

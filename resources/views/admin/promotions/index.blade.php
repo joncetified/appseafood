@@ -1,23 +1,39 @@
 @extends('layouts.admin')
 
 @section('content')
+    @php($isSuperAdmin = auth()->user()?->isSuperAdmin())
     <div class="mb-6 flex items-center justify-between">
         <div><h2 class="text-xl font-bold">Promo</h2><p class="text-sm text-slate-500">Kelola promo yang tampil di aplikasi.</p></div>
         <a href="{{ route('admin.promotions.create') }}" class="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white">Tambah Promo</a>
     </div>
     <div class="overflow-hidden rounded-3xl bg-white shadow-sm">
         <table class="min-w-full text-sm">
-            <thead class="bg-slate-50 text-left text-slate-500"><tr><th class="px-6 py-4">Judul</th><th class="px-6 py-4">Periode</th><th class="px-6 py-4">Status</th><th class="px-6 py-4"></th></tr></thead>
+            <thead class="bg-slate-50 text-left text-slate-500">
+                <tr>
+                    <th class="px-6 py-4">Judul</th>
+                    <th class="px-6 py-4">Periode</th>
+                    <th class="px-6 py-4">Status</th>
+                    @if($isSuperAdmin)
+                        <th class="px-6 py-4">Created By</th>
+                        <th class="px-6 py-4">Updated By</th>
+                    @endif
+                    <th class="px-6 py-4"></th>
+                </tr>
+            </thead>
             <tbody>
                 @forelse($promotions as $promotion)
                     <tr class="border-t border-slate-100">
                         <td class="px-6 py-4">{{ $promotion->title }}</td>
                         <td class="px-6 py-4">{{ $promotion->start_date?->format('d/m/Y') ?? '-' }} - {{ $promotion->end_date?->format('d/m/Y') ?? '-' }}</td>
                         <td class="px-6 py-4">{{ $promotion->is_active ? 'Aktif' : 'Nonaktif' }}</td>
+                        @if($isSuperAdmin)
+                            <td class="px-6 py-4">{{ $promotion->creator?->name ?? '-' }}</td>
+                            <td class="px-6 py-4">{{ $promotion->updater?->name ?? '-' }}</td>
+                        @endif
                         <td class="px-6 py-4 text-right"><a href="{{ route('admin.promotions.edit', $promotion) }}" class="mr-3 font-medium text-cyan-700">Edit</a><form method="POST" action="{{ route('admin.promotions.destroy', $promotion) }}" class="inline">@csrf @method('DELETE')<button type="submit" class="font-medium text-rose-600">Hapus</button></form></td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="px-6 py-8 text-center text-slate-400">Belum ada promo.</td></tr>
+                    <tr><td colspan="{{ $isSuperAdmin ? 6 : 4 }}" class="px-6 py-8 text-center text-slate-400">Belum ada promo.</td></tr>
                 @endforelse
             </tbody>
         </table>
